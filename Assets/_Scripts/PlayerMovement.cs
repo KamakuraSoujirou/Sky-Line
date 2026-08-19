@@ -34,6 +34,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("スロープ判定")]
     [SerializeField] private float _maxSlopeAngle = 35f;
     [SerializeField] private RaycastHit _slopeHit;
+    private bool _exitingSlope = false;
 
     private InputAction _moveAction;
     private InputAction _jumpAction;
@@ -123,17 +124,17 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    private bool IsCrouching => transform.localScale.y < _startScale.y;
+
     private void StateHandler()
     {
-        // 状態を判定
-        if(_crouchAction != null && _crouchAction.triggered)
+        // 状態を判定（しゃがみはトグルなので、triggered ではなく現在の姿勢で判定する）
+        if (IsCrouching)
         {
             _movementState = MovementState.crouching;
             _moveSpeed = _crouchSpeed;
         }
-        else
-
-            if (_grounded && _sprintAction != null && _sprintAction.ReadValue<float>() > 0.1f)
+        else if (_grounded && _sprintAction != null && _sprintAction.ReadValue<float>() > 0.1f)
         {
             _movementState = MovementState.sprinting;
             _moveSpeed = _sprintSpeed;
@@ -155,13 +156,13 @@ public class PlayerMovement : MonoBehaviour
         _moveDirection = _orientation.forward * _verticalInput + _orientation.right * _horizontalInput;
 
         // スロープ上にいる場合の移動方向を調整
-        if (OnSlope())
+        if (OnSlope() && !_exitingSlope)
         {
             _rb.AddForce(GetSlopeMoveDirection() * _moveSpeed * 10f, ForceMode.Force);
             if (_rb.linearVelocity.y > 0)
                 _rb.AddForce(Vector3.down * 80f, ForceMode.Force);
         }
-        if (_grounded)
+        else if (_grounded)
         {
             _rb.AddForce(_moveDirection.normalized * _moveSpeed * 10f, ForceMode.Force);
         }
@@ -172,17 +173,28 @@ public class PlayerMovement : MonoBehaviour
     }
     private void SpeedControl()
     {
-        Vector3 flatVel = new Vector3(_rb.linearVelocity.x, 0f, _rb.linearVelocity.z);
-
-        if(flatVel.magnitude > _moveSpeed)
+        if (OnSlope() && !_exitingSlope)
         {
-            Vector3 limitedVel = flatVel.normalized * _moveSpeed;
-            _rb.linearVelocity = new Vector3(limitedVel.x, _rb.linearVelocity.y, limitedVel.z);
+            if (_rb.linearVelocity.magnitude > _moveSpeed)
+            {
+                _rb.linearVelocity = _rb.linearVelocity.normalized * _moveSpeed;
+            }
+        }
+        else
+        {
+            Vector3 flatVel = new Vector3(_rb.linearVelocity.x, 0f, _rb.linearVelocity.z);
+
+            if (flatVel.magnitude > _moveSpeed)
+            {
+                Vector3 limitedVel = flatVel.normalized * _moveSpeed;
+                _rb.linearVelocity = new Vector3(limitedVel.x, _rb.linearVelocity.y, limitedVel.z);
+            }
         }
     }
 
     private void Jump()
     {
+        _exitingSlope = true;
         // ジャンプ処理
         _rb.linearVelocity = new Vector3(_rb.linearVelocity.x, 0f, _rb.linearVelocity.z);
         _rb.AddForce(transform.up * _jumpForce, ForceMode.Impulse);
@@ -192,10 +204,12 @@ public class PlayerMovement : MonoBehaviour
     {
         // ジャンプのリセット処理
         _readyToJump = true;
+
+        _exitingSlope = false;
     }
     private bool OnSlope()
     {
-        if (Physics.Raycast(transform.position, Vector3.down, out _slopeHit, playerHeight * 0.5f + 0.3f))
+        if (Physics.Raycast(transform.position, Vector3.down, out _slopeHit, playerHeight * 0.5f + 0.3f, groundLayer))
         {
             float angle = Vector3.Angle(Vector3.up, _slopeHit.normal);
             return angle < _maxSlopeAngle && angle != 0;
