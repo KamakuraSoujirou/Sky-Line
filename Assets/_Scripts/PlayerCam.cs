@@ -7,8 +7,10 @@ public class PlayerCam : MonoBehaviour
     [SerializeField] private Transform _orientation;
 
     [Header("感度設定")]
-    [SerializeField] private float _sensX;
-    [SerializeField] private float _sensY;
+    [SerializeField] private float _mouseSensX;
+    [SerializeField] private float _mouseSensY;
+    [SerializeField] private float _gamePadSensX;
+    [SerializeField] private float _gamePadSensY;
 
     private float _xRotation;
     private float _yRotation;
@@ -23,12 +25,15 @@ public class PlayerCam : MonoBehaviour
     void Update()
     {
         Vector2 lookValue = _lookAction.ReadValue<Vector2>();
-
-        // ゲームパッドの場合はTime.deltaTimeを使用し、マウスの場合は1を使用
-        float timeFactor = (_lookAction.activeControl?.device is Gamepad) ? Time.deltaTime : 1f;
-
-        float inputX = lookValue.x * timeFactor * _sensX;
-        float inputY = lookValue.y * timeFactor * _sensY;
+        // 1. デバイスがゲームパッド（コントローラー）かどうかを判定
+        bool isGamepad = _lookAction.activeControl?.device is Gamepad;
+        // 2. デバイスに応じて適用する感度・時間係数を決定
+        float currentSensX = isGamepad ? _gamePadSensX : _mouseSensX;
+        float currentSensY = isGamepad ? _gamePadSensY : _mouseSensY;
+        float timeFactor = isGamepad ? Time.deltaTime : 1f;
+        // 3. 回転量を計算
+        float inputX = lookValue.x * currentSensX * timeFactor;
+        float inputY = lookValue.y * currentSensY * timeFactor;
 
         _yRotation += inputX;
         _xRotation -= inputY;
