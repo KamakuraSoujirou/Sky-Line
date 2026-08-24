@@ -13,6 +13,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _walkSpeed = 4f;
     [SerializeField] private float _sprintSpeed = 6f;
     [SerializeField] private float _slideSpeed = 8f;
+    [SerializeField] private float _wallrunningSpeed;
     [SerializeField] private float _speedIncreaseMultiplier = 1.5f;
     [SerializeField] private float _slopeIncreaseMultiplier = 2.5f;
     [SerializeField] private float _groundDrag = 6f;
@@ -54,6 +55,7 @@ public class PlayerMovement : MonoBehaviour
     public float HorizontalInput{ get; private set; }
     public float VerticalInput { get; private set; }
     public bool IsSliding;
+    public bool IsWallrunning;
 
     private Vector3 _moveDirection;
 
@@ -62,6 +64,7 @@ public class PlayerMovement : MonoBehaviour
     {
         walking,
         sprinting,
+        wallruning,
         crouching,
         sliding,
         air
@@ -145,6 +148,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void StateHandler()
     {
+        //モード　- 壁走り
+        if(IsWallrunning)
+        {
+            _movementState = MovementState.wallruning;
+            _desiredMoveSpeed = _wallrunningSpeed;
+        }
         // モード - スライド
         if (IsSliding)
         {
