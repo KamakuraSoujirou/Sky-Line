@@ -14438,9 +14438,9 @@ MonoBehaviour:
   Orientation: {fileID: 2071350030}
   _moveSpeed: 5
   _walkSpeed: 7
-  _sprintSpeed: 12
+  _sprintSpeed: 7
   _slideSpeed: 30
-  _wallrunningSpeed: 0
+  _wallrunningSpeed: 10
   _speedIncreaseMultiplier: 1.5
   _slopeIncreaseMultiplier: 2.5
   _groundDrag: 4
@@ -14542,7 +14542,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   _wallRunForce: 200
-  _wallClimebSpeed: 1.5
+  _wallJumpUpForce: 7
+  _wallJumpSideForce: 12
+  _wallClimebSpeed: 3
   _maxWallRunTime: 1.5
   _wallCheckDistance: 0.7
   _minJumpHeight: 0.5

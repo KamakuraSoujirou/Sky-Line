@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
 public class WallRunning : MonoBehaviour
@@ -7,6 +8,8 @@ public class WallRunning : MonoBehaviour
     [SerializeField] private LayerMask _wallLayer;
     [SerializeField] private LayerMask _groundLayer;
     [SerializeField] private float _wallRunForce;
+    [SerializeField] private float _wallJumpUpForce;
+    [SerializeField] private float _wallJumpSideForce;
     [SerializeField] private float _wallClimebSpeed;
     [SerializeField] private float _maxWallRunTime;
     private float _wallRunTimer;
@@ -20,6 +23,7 @@ public class WallRunning : MonoBehaviour
 
     private Rigidbody _rb;
     private PlayerMovement _pm;
+    private InputAction _jumpAction;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -27,6 +31,7 @@ public class WallRunning : MonoBehaviour
     {
         _rb = GetComponent<Rigidbody>();
         _pm = GetComponent<PlayerMovement>();
+        _jumpAction = InputSystem.actions.FindAction("Jump");
     }
 
     // Update is called once per frame
@@ -59,6 +64,11 @@ public class WallRunning : MonoBehaviour
             if (!_pm.IsWallrunning)
             {
                 StartWallRun();
+            }
+            //壁ジャンプ
+            if (_jumpAction != null && _jumpAction.triggered)
+            {
+                WallJump();
             }
         }
         //State - 通常時
@@ -96,5 +106,16 @@ public class WallRunning : MonoBehaviour
     private void StopWallRun()
     {
         _pm.IsWallrunning = false;
+    }
+    private void WallJump()
+    {
+        Vector3 wallNormal = _wallRight ? _rightWallhit.normal : _leftWallhit.normal;
+        Vector3 forceToApply = transform.up * _wallJumpUpForce + wallNormal * _wallJumpSideForce;
+
+        //力をリセットして、ジャンプする
+        _rb.linearVelocity = new Vector3(_rb.linearVelocity.x,0f,_rb.linearVelocity.z);
+        _rb.AddForce(forceToApply, ForceMode.Impulse);
+
+        Debug.Log("壁ジャンプ");
     }
 }
