@@ -20,13 +20,14 @@ public class WallRunning : MonoBehaviour
     private RaycastHit _rightWallhit;
     private bool _wallLeft;
     private bool _wallRight;
+    [Header("壁走り終了処理")]
+    [SerializeField] private float  _exitWallTime;
+    private bool _exitingWall;
+    private float _exitingTimer;
 
     private Rigidbody _rb;
     private PlayerMovement _pm;
     private InputAction _jumpAction;
-
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         _rb = GetComponent<Rigidbody>();
@@ -34,7 +35,6 @@ public class WallRunning : MonoBehaviour
         _jumpAction = InputSystem.actions.FindAction("Jump");
     }
 
-    // Update is called once per frame
     void Update()
     {
         CheckForWall();
@@ -71,6 +71,20 @@ public class WallRunning : MonoBehaviour
                 WallJump();
             }
         }
+        //State - 壁走り終了
+        else if (_exitingWall)
+        {
+            if (_pm.IsWallrunning)
+            {
+                StopWallRun();
+            }
+            if (_exitingTimer > 0)
+            {
+                _exitingTimer -= Time.deltaTime;
+
+            }
+        }
+
         //State - 通常時
         else
         {
@@ -116,6 +130,5 @@ public class WallRunning : MonoBehaviour
         _rb.linearVelocity = new Vector3(_rb.linearVelocity.x,0f,_rb.linearVelocity.z);
         _rb.AddForce(forceToApply, ForceMode.Impulse);
 
-        Debug.Log("壁ジャンプ");
     }
 }
