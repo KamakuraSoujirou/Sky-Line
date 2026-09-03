@@ -5,10 +5,7 @@ public class FPSCursorController : MonoBehaviour
 {
     private bool isLocked = true;
 
-    void Start()
-    {
-        SetCursorState(true);
-    }
+    void Start() => SetCursorState(true);
 
     void Update()
     {

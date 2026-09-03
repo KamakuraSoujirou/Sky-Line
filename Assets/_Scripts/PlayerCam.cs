@@ -17,10 +17,7 @@ public class PlayerCam : MonoBehaviour
 
     private InputAction _lookAction;
 
-    void Start()
-    {
-        _lookAction = InputSystem.actions.FindAction("Look");
-    }
+    void Start() => _lookAction = InputSystem.actions.FindAction("Look");
 
     void Update()
     {
@@ -42,8 +39,6 @@ public class PlayerCam : MonoBehaviour
         // カメラの回転を更新
         transform.rotation = Quaternion.Euler(_xRotation, _yRotation, 0);
         _orientation.rotation = Quaternion.Euler(0, _yRotation, 0);
-
-
 
     }
 }

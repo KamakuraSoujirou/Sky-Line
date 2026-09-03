@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
 
 public class WallRunning : MonoBehaviour
 {
@@ -52,10 +51,7 @@ public class WallRunning : MonoBehaviour
         _wallRight = Physics.Raycast(transform.position, _pm.Orientation.right, out _rightWallhit, _wallCheckDistance, _wallLayer);
         _wallLeft = Physics.Raycast(transform.position, -_pm.Orientation.right, out _leftWallhit, _wallCheckDistance, _wallLayer);
     }
-    private bool AboveGround()
-    {
-        return !Physics.Raycast(transform.position, Vector3.down, _minJumpHeight, _groundLayer);
-    }
+    private bool AboveGround() => !Physics.Raycast(transform.position, Vector3.down, _minJumpHeight, _groundLayer);
     private void StateMachine()
     {
         //State - 壁走り
@@ -94,10 +90,7 @@ public class WallRunning : MonoBehaviour
             }
         }
     }
-    private void StartWallRun()
-    {
-        _pm.IsWallrunning = true;
-    }
+    private void StartWallRun() => _pm.IsWallrunning = true;
     private void WallRunningMovement()
     {
         _rb.useGravity = false;
@@ -117,10 +110,7 @@ public class WallRunning : MonoBehaviour
             _rb.AddForce(-wallNormal * 50f, ForceMode.Force);
         }
     }
-    private void StopWallRun()
-    {
-        _pm.IsWallrunning = false;
-    }
+    private void StopWallRun() => _pm.IsWallrunning = false;
     private void WallJump()
     {
         Vector3 wallNormal = _wallRight ? _rightWallhit.normal : _leftWallhit.normal;
