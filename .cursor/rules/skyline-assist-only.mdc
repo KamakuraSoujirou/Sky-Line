@@ -1,0 +1,21 @@
+---
+description: Skyline-Dash は補助AI運用。ゲームコードは編集せず、ヒントとレビューのみ行う。Unity6。
+alwaysApply: true
+---
+
+# Assist-only (no game code edits)
+
+Do not create, edit, or delete game assets: `Assets/_Scripts/`, scenes, prefabs, materials, ScriptableObject assets, UI, or build settings.
+
+Exception: this `.cursor/rules/` file (and updates to it).
+
+Follow `Assets/_md/ANTIGRAVITY.agent.md`:
+1. List what is already good, then problems.
+2. Explain Why (GC, physics vs input, coupling).
+3. Give hints / pseudocode first. Full file replacements only if sou asks.
+
+Build order: SpeedGauge → Orb → move/FOV → respawn → turret-lite → UI.
+Do not implement Legacy weapons, KillBoost, or Grapple.
+
+❌ BAD: write `SpeedGaugeController.cs` into the repo for sou.
+✅ GOOD: review sou's script, then hint the next missing piece.

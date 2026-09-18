@@ -1,5 +1,4 @@
 using System.Collections;
-using UnityEditor.ShaderKeywordFilter;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,6 +6,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("アサイン")]
     public Transform Orientation;
+    [SerializeField] private SpeedGaugeController _speedGaugeController;
 
     [Header("移動設定")]
     [SerializeField] private float _moveSpeed = 5f;
@@ -20,7 +20,9 @@ public class PlayerMovement : MonoBehaviour
 
     private bool _sprintToggle = false;
     private float _desiredMoveSpeed;
+    private float _baseDesiredSpeed;
     private float _lastDisiredMoveSpeed;
+
 
     [Header("ジャンプ設定")]
     [SerializeField] private float _jumpForce = 5f;
@@ -71,7 +73,7 @@ public class PlayerMovement : MonoBehaviour
     }
 
 
-    void Start()
+    private void Start()
     {
         _moveAction = InputSystem.actions.FindAction("Move");
         _jumpAction = InputSystem.actions.FindAction("Jump");
@@ -85,7 +87,7 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
-    void Update()
+    private void Update()
     {
         //設置判定
         IsGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.3f, _groundLayer);
@@ -105,9 +107,10 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        StateHandler();
         MovePlayer();
         SpeedControl();
-        StateHandler();
+
     }
 
     private void MyInput()
@@ -148,45 +151,50 @@ public class PlayerMovement : MonoBehaviour
 
     private void StateHandler()
     {
+        float baseDesired = _baseDesiredSpeed;
+
         //モード　- 壁走り
-        if(IsWallrunning)
+        if (IsWallrunning)
         {
             _movementState = MovementState.wallruning;
-            _desiredMoveSpeed = _wallrunningSpeed;
+            baseDesired = _wallrunningSpeed;
         }
         // モード - スライド
         if (IsSliding)
         {
             _movementState = MovementState.sliding;
 
-            if (OnSlope() && VerticalInput > 0)
-                _desiredMoveSpeed = _slideSpeed;
-            else
-                _desiredMoveSpeed = _sprintSpeed;
+            baseDesired = (OnSlope() && VerticalInput > 0) ? _slideSpeed : _sprintSpeed;
         }
         // モード - しゃがみ
         else if (IsCrouching)
         {
             _movementState = MovementState.crouching;
-            _desiredMoveSpeed = _crouchSpeed;
+            baseDesired = _crouchSpeed;
         }
         // モード - スプリント
         else if (IsGrounded && _sprintToggle)
         {
             _movementState = MovementState.sprinting;
-            _desiredMoveSpeed = _sprintSpeed;
+            baseDesired = _sprintSpeed;
         }
         // モード - 歩行
         else if (IsGrounded)
         {
             _movementState = MovementState.walking;
-            _desiredMoveSpeed = _walkSpeed;
+            baseDesired = _walkSpeed;
         }
         // モード - 空中
         else
         {
             _movementState = MovementState.air;
         }
+
+        //レベルに応じて移動速度を調整
+        _baseDesiredSpeed = baseDesired;
+        float mul = _speedGaugeController != null ? _speedGaugeController.CurrentMoveSpeedMultiplier : 1f;
+        _desiredMoveSpeed = baseDesired * mul;
+
         // 速度の変化がある場合、補間処理を開始
         if (Mathf.Abs(_desiredMoveSpeed - _lastDisiredMoveSpeed) > 6f && _moveSpeed != 0)
         {
@@ -196,6 +204,7 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             _moveSpeed = _desiredMoveSpeed;
+            
         }
 
         _lastDisiredMoveSpeed = _desiredMoveSpeed;
